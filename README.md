@@ -83,6 +83,6 @@ git submodule update
  8. Re-sync ventura-repo (root)
 
  ```
- sudo emerge --sync rem-repo
+ sudo emerge --sync ventura-repo
  ```
 
