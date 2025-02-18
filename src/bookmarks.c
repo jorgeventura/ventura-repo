@@ -27,7 +27,6 @@
 static GtkWidget *bkdial;
 int delete = 0;
 
-struct menu_items bookmark_items[128];
 static GtkWidget* create_bookmark_dialogue(void);
 
 static void mark_for_delete(void) {

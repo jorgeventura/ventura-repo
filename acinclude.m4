@@ -66,7 +66,7 @@ AC_DEFUN(AM_PATH_NETSNMP,[
       if test "x$found_snmp_lib" = "x" ; then
         for trytype in libsnmp.sl libsnmp.so libsnmp.a libnetsnmp.sl libnetsnmp.so libnetsnmp.a ; do
           if test -r "$tryprefix/lib/$trytype" ; then
-            SNMP_LIBS="-L$tryprefix/lib -lsnmp"
+            SNMP_LIBS="-L$tryprefix/lib64 -lsnmp"
           fi
         done
       fi
@@ -277,13 +277,11 @@ AC_DEFUN(AM_PATH_NETSNMP,[
     echo "***   --with-snmp-lib=DIR"
     echo "***"
     CFLAGS="$ac_save_CFLAGS"
-    LDFLAGS="$ac_save_LDFLAGS"
     LIBS="$ac_save_LIBS"
     ifelse([$3], ,:,[$3])
   fi
 
   CFLAGS="$ac_save_CFLAGS"
-  LDFLAGS="$ac_save_LDFLAGS"
   LIBS="$ac_save_LIBS"
 
   AC_SUBST(SNMP_CFLAGS)

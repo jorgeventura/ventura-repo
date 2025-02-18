@@ -9,12 +9,14 @@ typedef struct {
   GtkAccelGroup *accels;
 } main_widgets_t;
 
-struct menu_items {
+typedef struct menu_items {
   char *item;
   GtkSignalFunc func;
   gpointer data;
   GtkWidget *mi;
-};
+} menu_items;
+
+extern struct menu_items bookmark_items[128];
 
 void set_hostname(const char *host);
 void set_oid(const char *oid);

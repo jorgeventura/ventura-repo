@@ -5706,8 +5706,8 @@ printf %s "checking for snmp-type... " >&6; }
 
       if test "x$found_snmp_lib" = "x" ; then
         for trytype in libsnmp.sl libsnmp.so libsnmp.a libnetsnmp.sl libnetsnmp.so libnetsnmp.a ; do
-          if test -r "$tryprefix/lib/$trytype" ; then
-            SNMP_LIBS="-L$tryprefix/lib -lsnmp"
+          if test -r "$tryprefix/lib64/$trytype" ; then
+            SNMP_LIBS="-L$tryprefix/lib64 -lsnmp"
           fi
         done
       fi
@@ -6217,13 +6217,11 @@ fi
     echo "***   --with-snmp-lib=DIR"
     echo "***"
     CFLAGS="$ac_save_CFLAGS"
-    LDFLAGS="$ac_save_LDFLAGS"
     LIBS="$ac_save_LIBS"
     as_fn_error $? "SNMP checks failed" "$LINENO" 5
   fi
 
   CFLAGS="$ac_save_CFLAGS"
-  LDFLAGS="$ac_save_LDFLAGS"
   LIBS="$ac_save_LIBS"
 
 
