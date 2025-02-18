@@ -28,7 +28,7 @@ extern int delete;
 extern int context_id;
 extern int tview;
 
-extern struct menu_items bookmark_items[128];
+struct menu_items bookmark_items[128];
 extern int dont_select_damnit;
 extern int dont_update_entry;
 static struct tree *mibtree;
