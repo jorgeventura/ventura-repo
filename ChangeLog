@@ -1,0 +1,62 @@
+Version 0.4.3 -
+		Fix segfault when typing invalid oid number
+Version 0.4.2 -
+		Fix spurious autoscrolling
+Version 0.4.1 -
+		Code cleanup, get rid of some deprecated components
+		Support saving of window size
+		Support more oid types/input conventions
+Version 0.4.0 -
+		New maintainer
+		Upgrade to gtk2
+		Improve autodetection of oid type (now supports unsigned, etc.)
+		Handle gui events while performing long tasks
+		Put scrollbars on the right side
+		Make output wrapping configurable
+Version 0.3.1 -
+                Ability to open arbitrary MIB files.
+		Added correct version number (last version emitted 0.2.4
+                instead of 0.3.0)
+		Fixed compiler warnings on NetBSD-sparc64
+Version 0.3.0 - 
+		Changing the port number actually works now
+		Write community can be over 10 characters
+		Port can be over 4 digits
+		Fixed configure checks for snmp to work under Solaris
+		Add net-snmp-5.x support
+		Value disabled from non-writable variables
+		Value populated with enums
+		Add "as" for sets to make life easier
+		Fix for displaying oids with over 6 digits (Jacob Gladish)
+		Fix compilation warnings under NetBSD (Felicia Neff)
+		Fix compilation under FreeBSD (Mark Pulford)
+		OID's can have over 4 digits between .'s
+Version 0.2.3
+		Fix for random segfault when selecting a node from the mibtree.
+		Added keyboard accelerators for Get (g or ctrl g),
+		Walk (w or ctrl w), set (s or ctrl s), exit (e or ctrl e)
+Version 0.2.2
+		Fixes for broken API's in RedHat and Mandrake.
+Version 0.2.1
+		Fixed compile bug with gcc 3.0.x whoops
+Version 0.2
+		Ergonomic Improvements
+		- Scrollbars moved to left side
+		- Actions moved left
+		- Host entry moved left
+		New Features
+	        - Added SNMP configuration
+		- Eye candy
+		- Supports SNMPv2c
+		- Session is saved between restarts
+		- Configurability of tree view
+		Bug Fixes
+	        - configure patch for net-snmp-4.2 proper submitted by 
+		  Steven R. Loomis <srl@monkey.sbay.org>
+                - Much code cleanup
+		- Moved tree structure to GtkCTree, fixing intermittent
+		  segfaults and allowing a less 'hackish' approach.
+                - Fixed a bug where multiple MIBs with the same label, but
+		  different subid caused a segfault.
+		- Import of more than just the ISO tree.
+Version 0.1 - Initial Public Released

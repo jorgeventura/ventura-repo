@@ -1,0 +1,20 @@
+Version 0.2 - Ergonomic Improvements
+		- Scrollbars moved to left side
+		- Actions moved left
+		- Host entry moved left
+            - New Features
+	        - Added SNMP configuration
+		- Eye candy
+		- Supports SNMPv2c
+		- Session is saved between restarts
+		- Configurability of tree view
+            - Bug Fixes
+	        - configure patch for net-snmp-4.2 proper submitted by 
+		  Steven R. Loomis <srl@monkey.sbay.org>
+                - Much code cleanup
+		- Moved tree structure to GtkCTree, fixing intermittent
+		  segfaults and allowing a less 'hackish' approach.
+                - Fixed a bug where multiple MIBs with the same label, but
+		  different subid caused a segfault.
+                - Import of more than just the ISO tree.
+Version 0.1 - Initial Public Released

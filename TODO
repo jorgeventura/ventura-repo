@@ -1,0 +1,7 @@
+-More code cleanup
+-UI improvements
+-Interactive graphing
+-SNMPv3 support
+-Hostname Autocompletion (via /etc/hosts or history)
+-Device Profiling
+-pointers returned by gtk_entry_get_text should not be hold
