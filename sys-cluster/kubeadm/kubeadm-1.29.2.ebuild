@@ -3,16 +3,16 @@
 
 EAPI=8
 
-EGIT_COMMIT=4c1e535e39abf2acba78ac3408ab5eed77364e68
-
-
-inherit bash-completion-r1 go-module git-r3
+#inherit bash-completion-r1 go-module git-r3
+inherit bash-completion-r1 go-module
 
 DESCRIPTION="CLI to Easily bootstrap a secure Kubernetes cluster"
 HOMEPAGE="https://kubernetes.io"
-EGIT_REPO_URI="https://github.com/kubernetes/kubernetes"
-EGIT_BRANCH="release-1.29"
-#SRC_URI="https://github.com/kubernetes/kubernetes/archive/v${PV}.tar.gz -> kubernetes-${PV}.tar.gz"
+SRC_URI="https://github.com/kubernetes/kubernetes/archive/v${PV}.tar.gz -> kubernetes-${PV}.tar.gz"
+
+# EGIT_COMMIT=4b8e819355d791d96b7e9d9efe4cbafae2311c88
+# EGIT_REPO_URI="https://github.com/kubernetes/kubernetes"
+# EGIT_BRANCH="release-1.29"
 
 LICENSE="Apache-2.0"
 SLOT="0"
@@ -20,11 +20,13 @@ KEYWORDS="amd64 ~arm64"
 IUSE="hardened selinux"
 
 BDEPEND=">=dev-lang/go-1.21.6"
-RDEPEND="app-containers/cri-tools
-	selinux? ( sec-policy/selinux-kubernetes )"
+RDEPEND="
+  app-containers/cri-tools
+  selinux? ( sec-policy/selinux-kubernetes )
+"
 
 RESTRICT+=" test"
-#S="${WORKDIR}/kubernetes-${PV}"
+S="${WORKDIR}/kubernetes-${PV}"
 
 src_compile() {
 	CGO_LDFLAGS="$(usex hardened '-fno-PIC ' '')" FORCE_HOST_GO=yes \

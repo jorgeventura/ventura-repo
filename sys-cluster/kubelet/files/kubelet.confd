@@ -1,4 +1,4 @@
 ###
 # Kubernetes Kubelet (worker) config
 
-command_args=""
+command_args="--address=0.0.0.0 --hostname-override=$(hostname) --kubeconfig=/etc/kubernetes/kubelet.conf --cgroup-driver=systemd --fail-swap-on=false --container-runtime-endpoint=unix:///var/run/crio/crio.sock"

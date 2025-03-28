@@ -1,22 +1,13 @@
 [Unit]
 Description=Kubernetes Kubelet Server
-Documentation=https://kubernetes.io/docs/concepts/overview/components/#kubelet https://kubernetes.io/docs/reference/generated/kubelet/
-After=docker.service
-Requires=docker.service
+Documentation=https://kubernetes.io/docs/concepts/overview/components/#kubelet
+After=crio.service network.target
+Requires=crio.service
 
 [Service]
 WorkingDirectory=/var/lib/kubelet
-EnvironmentFile=-/etc/kubernetes/config
-EnvironmentFile=-/etc/kubernetes/kubelet
-ExecStart=/usr/bin/kubelet \
-	    $KUBE_LOGTOSTDERR \
-	    $KUBE_LOG_LEVEL \
-	    $KUBELET_KUBECONFIG \
-	    $KUBELET_ADDRESS \
-	    $KUBELET_PORT \
-	    $KUBELET_HOSTNAME \
-	    $KUBE_ALLOW_PRIV \
-	    $KUBELET_ARGS
+EnvironmentFile=/etc/kubernetes/kubelet.env
+ExecStart=/usr/bin/kubelet $KUBELET_ADDRESS $KUBELET_HOSTNAME $KUBELET_KUBECONFIG $KUBELET_ARGS
 Restart=on-failure
 KillMode=process
 
