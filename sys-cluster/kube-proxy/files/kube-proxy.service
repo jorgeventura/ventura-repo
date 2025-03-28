@@ -1,8 +1,8 @@
 [Unit]
 Description=Kubernetes Proxy service
 Documentation=https://kubernetes.io/docs/concepts/architecture/#kube-proxy https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/
-After=docker.service
-Requires=docker.service
+After=crio.service network.target
+Requires=crio.service
 
 [Service]
 EnvironmentFile=/etc/kubernetes/kube-proxy.env

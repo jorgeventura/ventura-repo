@@ -19,26 +19,34 @@ SLOT="0"
 KEYWORDS="amd64 ~arm64"
 IUSE="hardened"
 
-RDEPEND="net-firewall/conntrack-tools"
+RDEPEND="
+    app-containers/cri-o
+    net-firewall/conntrack-tools
+"
 BDEPEND=">=dev-lang/go-1.21.6"
 
 RESTRICT+=" test"
+# Comment if you are going to use git
 S="${WORKDIR}/kubernetes-${PV}"
 
 src_compile() {
-	CGO_LDFLAGS="$(usex hardened '-fno-PIC ' '')" \
-		emake -j1 GOFLAGS="" GOLDFLAGS="" LDFLAGS="" FORCE_HOST_GO=yes \
-		WHAT=cmd/${PN}
+    CGO_LDFLAGS="$(usex hardened '-fno-PIC ' '')" \
+        emake -j1 GOFLAGS="" GOLDFLAGS="" LDFLAGS="" FORCE_HOST_GO=yes \
+        WHAT=cmd/${PN}
 }
 
 src_install() {
-	dobin _output/bin/${PN}
-	keepdir /var/log/${PN} /var/lib/${PN}
-	newinitd "${FILESDIR}"/${PN}.initd ${PN}
-	newconfd "${FILESDIR}"/${PN}.confd ${PN}
-	insinto /etc/logrotate.d
-	newins "${FILESDIR}"/${PN}.logrotated ${PN}
-	systemd_dounit "${FILESDIR}"/${PN}.service
-	insinto /etc/kubernetes
-	newins "${FILESDIR}"/${PN}.env ${PN}.env
+    dobin _output/bin/${PN}
+    keepdir /var/log/${PN} /var/lib/${PN}
+    insinto /etc/logrotate.d
+    newins "${FILESDIR}"/${PN}.logrotated ${PN}
+    systemd_dounit "${FILESDIR}"/${PN}.service
+    insinto /etc/kubernetes
+    newins "${FILESDIR}"/${PN}.env ${PN}.env
+}
+
+pkg_postinst() {
+    elog "This package installs kube-proxy for a Kubernetes worker node using CRI-O."
+    elog "Ensure 'kubeadm join' has been run to generate /etc/kubernetes/kube-proxy.yaml."
+    elog "Start the service with 'systemctl start kube-proxy' after enabling crio.service."
 }

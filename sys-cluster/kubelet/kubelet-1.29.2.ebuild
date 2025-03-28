@@ -26,6 +26,7 @@ RDEPEND="
 "
 
 RESTRICT+=" test "
+# Comment if you are going to use git
 S="${WORKDIR}/kubernetes-${PV}"
 
 src_compile() {
@@ -42,8 +43,6 @@ src_install() {
     insinto /etc/logrotate.d
     newins "${FILESDIR}"/${PN}.logrotated ${PN}
     systemd_dounit "${FILESDIR}"/${PN}.service
-    insinto /etc/kubernetes
-    newins "${FILESDIR}"/${PN}.env ${PN}.env
 }
 
 pkg_postinst() {
