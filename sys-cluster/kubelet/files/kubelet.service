@@ -1,8 +1,8 @@
 [Unit]
 Description=Kubernetes Kubelet Server
 Documentation=https://kubernetes.io/docs/concepts/overview/components/#kubelet
-After=crio.service network.target
-Requires=crio.service
+After=crio.service network-online.target
+Requires=crio.service network-online.target
 
 [Service]
 Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
