@@ -3,14 +3,16 @@
 
 EAPI=8
 
-
-inherit bash-completion-r1 go-module git-r3
+inherit bash-completion-r1 go-module
+#inherit bash-completion-r1 go-module git-r3
 
 DESCRIPTION="CLI and validation tools for Kubelet Container Runtime (CRI)"
 HOMEPAGE="https://github.com/kubernetes-sigs/cri-tools"
-EGIT_REPO_URI="https://github.com/kubernetes-sigs/cri-tools"
-EGIT_BRANCH="master"
-EGIT_COMMIT=3b3a9479260a5d9926c596ae068e9c51110cf546
+SRC_URI="https://github.com/kubernetes-sigs/cri-tools/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+
+#EGIT_COMMIT=3b3a9479260a5d9926c596ae068e9c51110cf546
+#EGIT_REPO_URI="https://github.com/kubernetes-sigs/cri-tools"
+#EGIT_BRANCH="master"
 
 LICENSE="Apache-2.0 BSD BSD-2 CC-BY-SA-4.0 ISC MIT MPL-2.0"
 SLOT="0"

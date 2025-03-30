@@ -3,15 +3,16 @@
 
 EAPI=8
 
-EGIT_COMMIT=99060581eb2755e17d814bd4508630045099047f
-
-inherit go-module git-r3
+#inherit go-module git-r3
+inherit go-module
 
 DESCRIPTION="OCI-based implementation of Kubernetes Container Runtime Interface"
 HOMEPAGE="https://cri-o.io/"
-EGIT_REPO_URI="https://github.com/cri-o/cri-o"
-EGIT_BRANCH="release-1.29"
-#SRC_URI="https://github.com/cri-o/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="https://github.com/cri-o/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+
+#EGIT_COMMIT=99060581eb2755e17d814bd4508630045099047f
+#EGIT_REPO_URI="https://github.com/cri-o/cri-o"
+#EGIT_BRANCH="release-1.29"
 
 LICENSE="Apache-2.0 BSD BSD-2 CC-BY-SA-4.0 ISC MIT MPL-2.0"
 SLOT="0"
