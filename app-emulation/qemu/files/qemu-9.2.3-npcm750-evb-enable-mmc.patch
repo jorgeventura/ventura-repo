@@ -1,0 +1,92 @@
+Only in b: cscope.out
+diff '--color=auto' -ur a/hw/arm/npcm7xx_boards.c b/hw/arm/npcm7xx_boards.c
+--- a/hw/arm/npcm7xx_boards.c	2025-03-26 19:37:00.000000000 -0000
++++ b/hw/arm/npcm7xx_boards.c	2025-07-08 15:34:13.523339727 -0000
+@@ -373,6 +373,7 @@
+     npcm7xx_connect_flash(&soc->fiu[0], 0, "w25q256", drive_get(IF_MTD, 0, 0));
+     npcm750_evb_i2c_init(soc);
+     npcm750_evb_fan_init(NPCM7XX_MACHINE(machine), soc);
++    sdhci_attach_drive(&soc->mmc.sdhci, 0);
+     npcm7xx_load_kernel(machine, soc);
+ }
+ 
+diff '--color=auto' -ur a/hw/misc/npcm7xx_clk.c b/hw/misc/npcm7xx_clk.c
+--- a/hw/misc/npcm7xx_clk.c	2025-03-26 19:37:00.000000000 -0000
++++ b/hw/misc/npcm7xx_clk.c	2025-07-10 18:47:02.236673834 -0000
+@@ -530,7 +530,7 @@
+         .name = "timer-divider",
+         .src_type = CLKSRC_SEL,
+         .src_index = NPCM7XX_CLOCK_TIMCKSEL,
+-        .divide = divide_by_reg_divisor,
++        .divide = shift_by_reg_divisor,
+         .reg = NPCM7XX_CLK_CLKDIV1,
+         .offset = 21,
+         .len = 5,
+diff '--color=auto' -ur a/hw/timer/npcm7xx_timer.c b/hw/timer/npcm7xx_timer.c
+--- a/hw/timer/npcm7xx_timer.c	2025-03-26 19:37:00.000000000 -0000
++++ b/hw/timer/npcm7xx_timer.c	2025-07-10 18:45:58.146673824 -0000
+@@ -29,6 +29,12 @@
+ #include "qemu/units.h"
+ #include "trace.h"
+ 
++/*
++ * The reference clock hz, and the SECCNT and CNTR25M registers in this module,
++ * is always 25 MHz.
++ */
++#define NPCM7XX_CLOCK_REF_HZ            (25000000)
++
+ /* 32-bit register indices. */
+ enum NPCM7xxTimerRegisters {
+     NPCM7XX_TIMER_TCSR0,
+@@ -428,11 +434,28 @@
+     NPCM7xxTimerCtrlState *s = opaque;
+     uint64_t value = 0;
+     hwaddr reg;
++    int64_t now_ns;
+ 
+     reg = offset / sizeof(uint32_t);
++    /* --- NEW: Handle the special U-Boot registers first --- */
++    /*
++     * The U-Boot driver for the 'nuvoton,npcm750-timer' uses this peripheral
++     * to read two free-running counters for its udelay implementation.
++     * We handle these specific offsets here without disrupting the main
++     * programmable timer register map.
++     */
+     switch (reg) {
+     case NPCM7XX_TIMER_TCSR0:
++        now_ns = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
++        value = (now_ns - s->ref_ns) / NANOSECONDS_PER_SECOND;
++	break;
++
+     case NPCM7XX_TIMER_TCSR1:
++    	now_ns = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
++        /* This formula emulates a 25MHz counter */
++	value = (((now_ns - s->ref_ns) / 640) << 4) % NPCM7XX_CLOCK_REF_HZ;
++	break;
++
+     case NPCM7XX_TIMER_TCSR2:
+     case NPCM7XX_TIMER_TCSR3:
+     case NPCM7XX_TIMER_TCSR4:
+@@ -611,6 +634,8 @@
+     int i;
+     NPCM7xxWatchdogTimer *w;
+ 
++    s->ref_ns = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
++
+     for (i = 0; i < NPCM7XX_TIMERS_PER_CTRL; i++) {
+         NPCM7xxTimer *t = &s->timer[i];
+         t->ctrl = s;
+diff '--color=auto' -ur a/include/hw/timer/npcm7xx_timer.h b/include/hw/timer/npcm7xx_timer.h
+--- a/include/hw/timer/npcm7xx_timer.h	2025-03-26 19:37:00.000000000 -0000
++++ b/include/hw/timer/npcm7xx_timer.h	2025-07-10 18:35:38.800007112 -0000
+@@ -104,6 +104,8 @@
+     Clock       *clock;
+     NPCM7xxTimer timer[NPCM7XX_TIMERS_PER_CTRL];
+     NPCM7xxWatchdogTimer watchdog_timer;
++
++    int64_t ref_ns;
+ };
+ 
+ #define TYPE_NPCM7XX_TIMER "npcm7xx-timer"
+Only in b: qemu-9.2.3-npcm750-evb-enable-mmc.patch
+Only in b: tags
