@@ -19,7 +19,7 @@ RESTRICT="!test? ( test )"
 # the Level Zero NPU userspace driver.
 
 RDEPEND="
-	sys-libs/level-zero
+	dev-libs/level-zero
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
