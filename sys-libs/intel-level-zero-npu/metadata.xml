@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+  <maintainer type="person">
+    <email>root@localhost</email>
+    <name>Local overlay</name>
+  </maintainer>
+  <upstream>
+    <remote-id type="github">intel/linux-npu-driver</remote-id>
+  </upstream>
+  <longdescription>
+    Local overlay package for the Intel NPU userspace Level Zero driver
+    library (libze_intel_npu) built from the upstream linux-npu-driver
+    repository at a fixed tag with submodules.
+  </longdescription>
+</pkgmetadata>
