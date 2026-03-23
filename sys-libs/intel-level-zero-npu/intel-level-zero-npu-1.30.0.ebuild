@@ -20,12 +20,16 @@ RESTRICT="!test? ( test )"
 
 RDEPEND="
 	dev-libs/level-zero
+	virtual/libudev
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
 	dev-vcs/git-lfs
 	dev-cpp/tbb
 	virtual/pkgconfig
+	test? (
+		dev-cpp/gtest
+	)
 "
 
 src_configure() {
@@ -34,6 +38,13 @@ src_configure() {
 		-DENABLE_NPU_COMPILER_BUILD=OFF
 		-DCMAKE_C_FLAGS=-fcf-protection=none
 		-DCMAKE_CXX_FLAGS=-fcf-protection=none
+
+		# main point: tests follow USE=test
+		-DBUILD_TESTING=$(usex test ON OFF)
+
+		# keep compiler component out for now
+		-DENABLE_NPU_COMPILER_BUILD=OFF
+
 		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 	)
 
