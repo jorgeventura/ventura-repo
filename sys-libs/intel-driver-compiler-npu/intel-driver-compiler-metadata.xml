@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+  <maintainer type="person">
+    <email>jorgeventura@example.invalid</email>
+    <name>Local overlay maintainer</name>
+  </maintainer>
+  <upstream>
+    <remote-id type="github">intel/linux-npu-driver</remote-id>
+  </upstream>
+  <use>
+    <flag name="test">Build and run upstream test targets.</flag>
+  </use>
+</pkgmetadata>
