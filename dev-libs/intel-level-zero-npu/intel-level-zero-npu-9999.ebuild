@@ -25,7 +25,7 @@ BDEPEND="
 "
 DEPEND="
 	>=dev-libs/level-zero-1.17.6
-	virtual/libtbb
+	dev-cpp/tbb
 "
 RDEPEND="${DEPEND}"
 
