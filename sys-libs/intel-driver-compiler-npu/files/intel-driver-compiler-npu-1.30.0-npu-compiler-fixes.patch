@@ -1,0 +1,255 @@
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp b/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
+index 707765f0..7a5c67ae 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
+@@ -124,7 +124,7 @@ private:
+ template <class ConcreteOp>
+ class EltwiseToNCE final : public mlir::OpRewritePattern<ConcreteOp> {
+ public:
+-    EltwiseToNCE<ConcreteOp>(mlir::MLIRContext* ctx, VPU::EltwiseType opType, Logger log)
++    EltwiseToNCE(mlir::MLIRContext* ctx, VPU::EltwiseType opType, Logger log)
+             : mlir::OpRewritePattern<ConcreteOp>(ctx), _opType(opType), _log(log) {
+     }
+ 
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
+index 135d8754..d8c4ce63 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
+@@ -23,7 +23,7 @@ namespace vpux::arch50xx {
+ template <typename ConcreteOp>
+ class ReduceToNCE final : public mlir::OpRewritePattern<ConcreteOp> {
+ public:
+-    ReduceToNCE<ConcreteOp>(mlir::MLIRContext* ctx, VPU::ReduceType opType, config::ArchKind arch, Logger log)
++    ReduceToNCE(mlir::MLIRContext* ctx, VPU::ReduceType opType, config::ArchKind arch, Logger log)
+             : mlir::OpRewritePattern<ConcreteOp>(ctx), _opType(opType), _arch(arch), _log(log) {
+     }
+ 
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
+index 93516850..9482b41d 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
+@@ -57,6 +57,8 @@ mlir::LogicalResult SetupIduCmxMuxModePass::initialize(mlir::MLIRContext* ctx) {
+     return mlir::success();
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wstringop-overflow"
+ void SetupIduCmxMuxModePass::safeRunOnFunc() {
+     auto funcOp = getOperation();
+     auto elfMain = ELF::getElfMainOp(funcOp);
+@@ -70,6 +72,7 @@ void SetupIduCmxMuxModePass::safeRunOnFunc() {
+         });
+     }
+ }
++#pragma GCC diagnostic pop
+ 
+ }  // namespace
+ 
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
+index f139ce18..cdbed207 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
+@@ -34,7 +34,7 @@ namespace {
+ template <typename EltwiseOp>
+ class BroadcastEltwiseRewriter final : public mlir::OpRewritePattern<EltwiseOp> {
+ public:
+-    BroadcastEltwiseRewriter<EltwiseOp>(mlir::MLIRContext* ctx, Logger log)
++    BroadcastEltwiseRewriter(mlir::MLIRContext* ctx, Logger log)
+             : mlir::OpRewritePattern<EltwiseOp>(ctx), _log(log) {
+         this->setDebugName("BroadcastEltwiseRewriter");
+     }
+@@ -198,7 +198,7 @@ bool isLegalEltwise(mlir::Operation* op) {
+ template <typename EltwiseOp>
+ class TransposeEltwiseRewriter final : public mlir::OpRewritePattern<EltwiseOp> {
+ public:
+-    TransposeEltwiseRewriter<EltwiseOp>(mlir::MLIRContext* ctx, Logger log)
++    TransposeEltwiseRewriter(mlir::MLIRContext* ctx, Logger log)
+             : mlir::OpRewritePattern<EltwiseOp>(ctx), _log(log) {
+         this->setDebugName("TransposeEltwiseRewriter");
+     }
+@@ -311,7 +311,7 @@ bool isPotentialScaleShift(mlir::Operation* op) {
+ template <typename EltwiseOp>
+ class MultiNonTrivialDimEltwiseRewriter final : public mlir::OpRewritePattern<EltwiseOp> {
+ public:
+-    MultiNonTrivialDimEltwiseRewriter<EltwiseOp>(mlir::MLIRContext* ctx, Logger log)
++    MultiNonTrivialDimEltwiseRewriter(mlir::MLIRContext* ctx, Logger log)
+             : mlir::OpRewritePattern<EltwiseOp>(ctx), _log(log) {
+         this->setDebugName("MultiNonTrivialDimEltwiseRewriter");
+     }
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
+index 2354df91..fee096d3 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
+@@ -304,7 +304,7 @@ class OpParamScaler<IE::FakeQuantizeOp> : public OpParamScalerBase {
+     mlir::Operation* _updatedOp;
+ 
+ public:
+-    OpParamScaler<IE::FakeQuantizeOp>(): OpParamScalerBase(), _updatedOp(nullptr) {
++    OpParamScaler(): OpParamScalerBase(), _updatedOp(nullptr) {
+     }
+     virtual inline std::pair<mlir::LogicalResult, bool> operator()(mlir::Operation* op, mlir::PatternRewriter& rewriter,
+                                                                    mlir::MLIRContext* ctx, TraversalDir traversalDir,
+@@ -312,7 +312,7 @@ public:
+     virtual mlir::Operation* updatedOp() override {
+         return _updatedOp;
+     }
+-    virtual ~OpParamScaler<IE::FakeQuantizeOp>() {
++    virtual ~OpParamScaler() {
+     }
+ };
+ 
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
+index fea08912..d853dd6d 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
+@@ -344,7 +344,7 @@ mlir::LogicalResult verifyAndBroadcastInput(mlir::Location loc, mlir::Value& inp
+ template <typename BiasTypeOp>
+ class ConvertBiasToScaleShift final : public mlir::OpRewritePattern<BiasTypeOp> {
+ public:
+-    ConvertBiasToScaleShift<BiasTypeOp>(mlir::MLIRContext* ctx, mlir::PatternBenefit benefit, Logger log)
++    ConvertBiasToScaleShift(mlir::MLIRContext* ctx, mlir::PatternBenefit benefit, Logger log)
+             : mlir::OpRewritePattern<BiasTypeOp>(ctx, benefit), _log(log) {
+         this->setDebugName("ConvertBiasToScaleShift");
+     }
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
+index d41d76b2..7e345ba7 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
+@@ -367,6 +367,8 @@ double vpux::VPU::NCESparsity::getSparsityRatio(vpux::NDTypeInterface weightsTyp
+     return getSparsityRatio(weightsType, compressedSize);
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wdangling-reference"
+ bool vpux::VPU::NCESparsity::isSparsifiableWeightsOperand(mlir::Value operand) {
+     const auto operandType = operand.getType();
+     // already sparse
+@@ -384,6 +386,7 @@ bool vpux::VPU::NCESparsity::isSparsifiableWeightsOperand(mlir::Value operand) {
+     }
+     return true;
+ }
++#pragma GCC diagnostic pop
+ 
+ bool vpux::VPU::NCESparsity::isSuperdenseRequired(const DimsOrder outOrder, const ShapeRef outShape,
+                                                   const mlir::Type outElemType) {
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
+index d0570a73..f14e0758 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
+@@ -531,6 +531,8 @@ void SwKernelOp::build(mlir::OpBuilder& builder, mlir::OperationState& opState,
+           /* listIndex */ nullptr, inputStrides, outputStrides, /*profilingMetadata*/ nullptr);
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wdangling-reference"
+ mlir::LogicalResult SwKernelOp::verify() {
+     const auto op = getOperation();
+     if (VPUIP::isCacheHandlingOp(*this)) {
+@@ -633,6 +635,7 @@ mlir::LogicalResult SwKernelOp::verify() {
+ 
+     return mlir::success();
+ }
++#pragma GCC diagnostic pop
+ 
+ mlir::LogicalResult SwKernelOp::inferReturnTypes(mlir::MLIRContext* ctx, std::optional<mlir::Location> optLoc,
+                                                  mlir::ValueRange operands, mlir::DictionaryAttr attrs,
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
+index 922f3003..0224ab16 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
+@@ -261,7 +261,8 @@ mlir::Type VPUIP::ITIBufferType::parse(mlir::AsmParser& parser) {
+ //
+ // verify
+ //
+-
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wdangling-reference"
+ mlir::LogicalResult VPUIP::ITIBufferType::verify(FuncRef<mlir::InFlightDiagnostic()> emitError,
+                                                  ::llvm::ArrayRef<int64_t> shape, mlir::Type /*elementType*/,
+                                                  mlir::MemRefLayoutAttrInterface /*layout*/,
+@@ -326,6 +327,7 @@ mlir::LogicalResult VPUIP::ITIBufferType::verify(FuncRef<mlir::InFlightDiagnosti
+ 
+     return mlir::success();
+ }
++#pragma GCC diagnostic pop
+ 
+ //
+ // NDTypeInterface
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
+index c4192203..d2be3700 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
+@@ -2,8 +2,12 @@
+ // Copyright (C) 2022-2026 Intel Corporation.
+ // SPDX-License-Identifier: Apache-2.0
+ //
+-
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+ #include "vpux/compiler/dialect/VPUIP/transforms/passes/unroll_distributed_ops.hpp"
++#pragma GCC diagnostic pop
++
++
+ #include "vpux/compiler/core/attributes/stride_reqs.hpp"
+ 
+ #include "vpux/compiler/dialect/VPU/utils/distributed_tensor_utils.hpp"
+@@ -827,6 +831,9 @@ std::optional<VPUIP::DistributedBufferType> getUniqueNCEInputTypeForPatchingSETa
+     return uniqueNCEInputType ? std::optional<VPUIP::DistributedBufferType>(uniqueNCEInputType) : std::nullopt;
+ }
+ 
++
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+ // SE pointers have the following format:
+ //   31-29 28                            9 8         0
+ //   -------------------------------------------------
+@@ -932,6 +939,7 @@ mlir::Value VPUIP::patchSETableValue(mlir::Location loc, Const::DeclareOp constO
+                                                      ArrayRef(seTableVals));
+     return builder.create<Const::DeclareOp>(loc, constOp.getType(), Const::ContentAttr::get(denseAttr));
+ }
++#pragma GCC diagnostic pop
+ 
+ void VPUIP::ClusterPerElementDMABaseRewriter::unrollSegmentedOrOverlapped(mlir::Location loc, VPURT::TaskOp vpurtTask,
+                                                                           mlir::OpBuilder& builder,
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
+index ec1f61bd..81a546f1 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
+@@ -1731,6 +1731,8 @@ InputTiling backInferMemPermuteSwKernelInputTile(VPUIP::SwKernelOp swKernelOp, c
+     return InputTiling{curTile};
+ }
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+ InputTiling backInferMvn1SumSwKernelInputTile(VPUIP::SwKernelOp swKernelOp, const vpux::TileInfo& outputTile, Logger) {
+     auto tileAxis = outputTile.axis;
+     auto tilingDims = getNonOneDim(tileAxis);
+@@ -1818,6 +1820,7 @@ InputTiling backInferMvn1SumSwKernelInputTile(VPUIP::SwKernelOp swKernelOp, cons
+ 
+     return TilingInfo{std::move(inputTile)};
+ }
++#pragma GCC diagnostic pop
+ 
+ InputTiling backInferMvn1NormSwKernelInputTile(VPUIP::SwKernelOp swKernelOp, const vpux::TileInfo& outputTile, Logger) {
+     auto swKernelRuns = swKernelOp.getBody().getOps<VPUIP::SwKernelRun>();
+diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
+index f8f49c56..7d8cf7e2 100644
+--- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
++++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
+@@ -29,6 +29,8 @@ private:
+     void safeRunOnFunc() final;
+ };
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wdangling-reference"
+ void ApplySwizzlingPass::safeRunOnFunc() {
+     auto func = getOperation();
+ 
+@@ -58,6 +60,7 @@ void ApplySwizzlingPass::safeRunOnFunc() {
+         constOp.erase();
+     });
+ }
++#pragma GCC diagnostic pop
+ 
+ }  // namespace
+ 

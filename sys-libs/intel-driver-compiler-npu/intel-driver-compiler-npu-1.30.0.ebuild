@@ -50,6 +50,13 @@ src_configure() {
 	cmake_src_configure
 }
 
+src_prepare() {
+	eapply "${FILESDIR}/${P}-npu-compiler-fixes.patch"
+
+	eapply_user
+	cmake_src_prepare
+}
+
 src_install() {
 	cmake_src_install
 
