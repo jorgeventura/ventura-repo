@@ -4,32 +4,27 @@ inherit cmake git-r3
 
 DESCRIPTION="Intel NPU compiler userspace library (libnpu_driver_compiler)"
 HOMEPAGE="https://github.com/intel/linux-npu-driver"
-
 EGIT_REPO_URI="https://github.com/intel/linux-npu-driver.git"
 EGIT_COMMIT="v${PV}"
 EGIT_SUBMODULES=( '*' )
 
-# Revisions pinned by upstream in compiler/compiler_source.cmake for v1.30.0
-OPENVINO_REVISION="77501947b70f6c7996f07c068f2067e868e356ed"
-NPU_COMPILER_OPENVINO_REVISION="4922c4955f9d5c457cf9d4ebbbc8bf6502167ada"
-NPU_COMPILER_REVISION="e0af53718947347b12ffcb7c8b7499ac7f2e93bf"
-NPU_COMPILER_TAG="npu_ud_2026_08_rc2"
-
-SRC_URI="
-	https://github.com/openvinotoolkit/openvino/archive/${OPENVINO_REVISION}.tar.gz
-		-> openvino-${OPENVINO_REVISION}.tar.gz
-	https://github.com/openvinotoolkit/openvino/archive/${NPU_COMPILER_OPENVINO_REVISION}.tar.gz
-		-> openvino-${NPU_COMPILER_OPENVINO_REVISION}.tar.gz
-	https://github.com/openvinotoolkit/npu_compiler/archive/${NPU_COMPILER_REVISION}.tar.gz
-		-> npu_compiler-${NPU_COMPILER_REVISION}.tar.gz
-"
-
 LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
-
 IUSE="test"
 RESTRICT="network-sandbox !test? ( test )"
+
+# Local-overlay ebuild for a fixed upstream tag.
+# Upstream ships the compiler as a separate package named intel-driver-compiler-npu,
+# but it is built from the same source tree as the userspace NPU driver.
+#
+# This ebuild intentionally keeps only libnpu_driver_compiler.so* from the install
+# image and removes the Level Zero loader, NPU driver library, firmware blobs, and
+# test binaries to avoid file collisions with other packages.
+#
+# Upstream documents that compiler build requires OpenVINO runtime. Depending on how
+# OpenVINO is installed on the system, CMake may need it available in a standard
+# prefix or via CMAKE_PREFIX_PATH/OpenVINO_DIR.
 
 RDEPEND="
 	=sys-libs/intel-level-zero-npu-${PV}
@@ -37,60 +32,10 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}"
 BDEPEND="
+	dev-vcs/git-lfs
 	virtual/pkgconfig
+	test? ( dev-cpp/gtest )
 "
-
-DOCS=( README.md docs/overview.md )
-
-src_unpack() {
-	git-r3_src_unpack
-	unpack ${A}
-}
-
-src_prepare() {
-	# Replace upstream Git-fetching ExternalProject logic with local, pre-fetched
-	# source trees so Portage does not need network access during compile.
-	cat > compiler/compiler_source.cmake <<EOF || die
-# Copyright (C) 2022-2026 Intel Corporation
-#
-# SPDX-License-Identifier: MIT
-
-if(TARGET npu_compiler_source)
-	return()
-endif()
-
-if(DEFINED ENV{TARGET_DISTRO})
-	set(TARGET_DISTRO \$ENV{TARGET_DISTRO})
-else()
-	set(TARGET_DISTRO \${CMAKE_SYSTEM_NAME})
-endif()
-
-include(ExternalProject)
-
-set(OPENVINO_REPOSITORY https://github.com/openvinotoolkit/openvino.git)
-set(OPENVINO_REVISION ${OPENVINO_REVISION})
-set(NPU_COMPILER_TAG ${NPU_COMPILER_TAG})
-set(NPU_COMPILER_REVISION ${NPU_COMPILER_REVISION})
-set(NPU_COMPILER_OPENVINO_REVISION ${NPU_COMPILER_OPENVINO_REVISION})
-
-set(OPENVINO_SOURCE_DIR "${WORKDIR}/openvino-${OPENVINO_REVISION}")
-set(NPU_COMPILER_SOURCE_DIR "${WORKDIR}/npu_compiler-${NPU_COMPILER_REVISION}")
-
-if(NOT NPU_COMPILER_OPENVINO_REVISION STREQUAL OPENVINO_REVISION)
-	set(NPU_COMPILER_OPENVINO_SOURCE_DIR "${WORKDIR}/openvino-${NPU_COMPILER_OPENVINO_REVISION}")
-	set(NPU_COMPILER_BUILD_DEPENDS npu_compiler_openvino_source)
-	add_custom_target(npu_compiler_openvino_source)
-else()
-	set(NPU_COMPILER_OPENVINO_SOURCE_DIR \${OPENVINO_SOURCE_DIR})
-	set(NPU_COMPILER_BUILD_DEPENDS openvino_source)
-endif()
-
-add_custom_target(openvino_source)
-add_custom_target(npu_compiler_source)
-EOF
-
-	cmake_src_prepare
-}
 
 src_configure() {
 	# Append the GCC 15 fix to system flags
@@ -157,11 +102,10 @@ src_install() {
 		"${ED}"/usr/lib*/libze_intel_npu.so* \
 		"${ED}"/usr/lib*/libze_intel_vpu.so* \
 		"${ED}"/usr/lib*/libtbbmalloc*.so* \
-		"${ED}"/usr/lib*/libtbbbind*.so* \
-		"${ED}"/usr/lib*/libopenvino*.so* \
-		"${ED}"/usr/lib*/libonnxruntime*.so*
+		"${ED}"/usr/lib*/libtbbbind*.so*
 
-	# Remove test/validation binaries from the image.
+	# Remove test/validation binaries from the image. They are useful in-tree but not
+	# required as runtime payload for the compiler package.
 	rm -f \
 		"${ED}"/usr/bin/npu-umd-test \
 		"${ED}"/usr/bin/npu-kmd-test
@@ -169,15 +113,15 @@ src_install() {
 	# Remove firmware payload if upstream installed it as part of the full install.
 	rm -rf \
 		"${ED}"/lib/firmware/intel/vpu \
-		"${ED}"/usr/lib/firmware/intel/vpu \
-		"${ED}"/usr/share/npu_compiler \
-		"${ED}"/usr/include
+		"${ED}"/usr/lib/firmware/intel/vpu
 
 	# Fail the install if the compiler library did not make it into the image.
-	compgen -G "${ED}/usr/lib*/libnpu_driver_compiler.so*" > /dev/null \
-		|| die "libnpu_driver_compiler.so was not installed"
+	shopt -s nullglob
+	local compiler_libs=( "${ED}"/usr/lib*/libnpu_driver_compiler.so* )
+	shopt -u nullglob
+	[[ ${#compiler_libs[@]} -gt 0 ]] || die "libnpu_driver_compiler.so was not installed"
 
-	einstalldocs
+	dodoc README.md docs/overview.md
 }
 
 src_test() {
@@ -186,6 +130,12 @@ src_test() {
 
 pkg_postinst() {
 	einfo "Installed Intel NPU compiler library: libnpu_driver_compiler.so"
+	einfo "This package complements intel-level-zero-npu and is typically needed"
+	einfo "for compiling/executing models on the NPU through OpenVINO."
+	einfo ""
 	einfo "Quick verification:"
 	einfo "  ldconfig -p | grep libnpu_driver_compiler"
+	einfo ""
+	einfo "If model compilation fails, ensure your OpenVINO runtime used for build"
+	einfo "and the installed runtime on the system are compatible with this driver tag."
 }
