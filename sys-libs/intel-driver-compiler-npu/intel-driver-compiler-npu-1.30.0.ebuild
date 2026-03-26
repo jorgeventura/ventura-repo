@@ -12,7 +12,7 @@ LICENSE="MIT"
 SLOT="0"
 KEYWORDS="amd64"
 IUSE="test"
-RESTRICT="!test? ( test )"
+RESTRICT="network-sandbox !test? ( test )"
 
 # Local-overlay ebuild for a fixed upstream tag.
 # Upstream ships the compiler as a separate package named intel-driver-compiler-npu,
@@ -38,23 +38,57 @@ BDEPEND="
 "
 
 src_configure() {
-	local mycmakeargs=(
-		-DCMAKE_BUILD_TYPE=Release
-		-DENABLE_NPU_COMPILER_BUILD=ON
-		-DCMAKE_C_FLAGS=-fcf-protection=none
-		-DCMAKE_CXX_FLAGS=-fcf-protection=none
-		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
-		-DBUILD_TESTING=$(usex test ON OFF)
-	)
+	# Append the GCC 15 fix to system flags
+	append-cflags "-fcf-protection=none"
+	append-cxxflags "-fcf-protection=none"
 
+	local mycmakeargs=(
+	    -DCMAKE_BUILD_TYPE=Release
+	    -DENABLE_NPU_COMPILER_BUILD=ON
+	    -DBUILD_TESTING=$(usex test ON OFF)
+	    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+	)
 	cmake_src_configure
 }
 
-src_prepare() {
-	eapply "${FILESDIR}/${P}-npu-compiler-fixes.patch"
 
-	eapply_user
-	cmake_src_prepare
+src_compile() {
+	# 1. First, configure to create the build structure
+	cmake_src_configure
+
+	# 2. Trigger the JIT downloads
+	# These targets create the nested directories
+	cmake_src_make npu_compiler_source
+	cmake_src_make npu_compiler_openvino_source
+	cmake_src_make openvino_source
+
+	# 3. Apply patches from the 'files' directory
+	einfo "Patching NPU Compiler..."
+	pushd "${BUILD_DIR}/compiler/src/npu_compiler" > /dev/null || die
+	if ! patch -p1 -R --dry-run < "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-compiler-fixes.patch" > /dev/null 2>&1; then
+	    eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-compiler-fixes.patch"
+	fi
+	popd > /dev/null
+
+	einfo "Patching nested GTest dependencies..."
+	# Path 00: Protobuf GTest
+	pushd "${BUILD_DIR}/compiler/src/openvino/thirdparty/protobuf/protobuf/third_party/googletest" > /dev/null || die
+	eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-00.patch"
+	popd > /dev/null
+
+	# Path 01: Direct OpenVino and Compiler GTest
+	local gtest_dirs=(
+	    "compiler/src/openvino/thirdparty/gtest/gtest"
+	    "compiler/src/npu_compiler_openvino/thirdparty/gtest/gtest"
+	)
+	for d in "${gtest_dirs[@]}"; do
+	    pushd "${BUILD_DIR}/${d}" > /dev/null || die
+	    eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-01.patch"
+	    popd > /dev/null
+	done
+
+	# 4. Final parallel build
+	cmake_src_compile
 }
 
 src_install() {

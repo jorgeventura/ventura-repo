@@ -1,7 +1,7 @@
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp b/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
+diff --git a/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp b/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
 index 707765f0..7a5c67ae 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
+--- a/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
++++ b/src/vpux_compiler/include/vpux/compiler/conversion/passes/IE2VPU/convert_IE_to_VPU_NCE.hpp
 @@ -124,7 +124,7 @@ private:
  template <class ConcreteOp>
  class EltwiseToNCE final : public mlir::OpRewritePattern<ConcreteOp> {
@@ -11,10 +11,10 @@ index 707765f0..7a5c67ae 100644
              : mlir::OpRewritePattern<ConcreteOp>(ctx), _opType(opType), _log(log) {
      }
  
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
+diff --git a/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp b/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
 index 135d8754..d8c4ce63 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
+--- a/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
++++ b/src/vpux_compiler/src/NPU50XX/conversion/passes/convert_IE_to_VPU_NCE_strategy.cpp
 @@ -23,7 +23,7 @@ namespace vpux::arch50xx {
  template <typename ConcreteOp>
  class ReduceToNCE final : public mlir::OpRewritePattern<ConcreteOp> {
@@ -24,10 +24,10 @@ index 135d8754..d8c4ce63 100644
              : mlir::OpRewritePattern<ConcreteOp>(ctx), _opType(opType), _arch(arch), _log(log) {
      }
  
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
+diff --git a/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp b/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
 index 93516850..9482b41d 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
+--- a/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
++++ b/src/vpux_compiler/src/NPU50XX/dialect/NPUReg50XX/passes/setup_idu_cmx_mux_mode.cpp
 @@ -57,6 +57,8 @@ mlir::LogicalResult SetupIduCmxMuxModePass::initialize(mlir::MLIRContext* ctx) {
      return mlir::success();
  }
@@ -45,10 +45,10 @@ index 93516850..9482b41d 100644
  
  }  // namespace
  
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
+diff --git a/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp b/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
 index f139ce18..cdbed207 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
+--- a/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
++++ b/src/vpux_compiler/src/dialect/IE/transforms/passes/adapt_shapes_for_scale_shift.cpp
 @@ -34,7 +34,7 @@ namespace {
  template <typename EltwiseOp>
  class BroadcastEltwiseRewriter final : public mlir::OpRewritePattern<EltwiseOp> {
@@ -76,10 +76,10 @@ index f139ce18..cdbed207 100644
              : mlir::OpRewritePattern<EltwiseOp>(ctx), _log(log) {
          this->setDebugName("MultiNonTrivialDimEltwiseRewriter");
      }
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
+diff --git a/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp b/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
 index 2354df91..fee096d3 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
+--- a/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
++++ b/src/vpux_compiler/src/dialect/IE/transforms/passes/adjust_fake_qdq_params.cpp
 @@ -304,7 +304,7 @@ class OpParamScaler<IE::FakeQuantizeOp> : public OpParamScalerBase {
      mlir::Operation* _updatedOp;
  
@@ -98,10 +98,10 @@ index 2354df91..fee096d3 100644
      }
  };
  
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
+diff --git a/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp b/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
 index fea08912..d853dd6d 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
+--- a/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
++++ b/src/vpux_compiler/src/dialect/IE/transforms/passes/convert_to_scale_shift.cpp
 @@ -344,7 +344,7 @@ mlir::LogicalResult verifyAndBroadcastInput(mlir::Location loc, mlir::Value& inp
  template <typename BiasTypeOp>
  class ConvertBiasToScaleShift final : public mlir::OpRewritePattern<BiasTypeOp> {
@@ -111,10 +111,10 @@ index fea08912..d853dd6d 100644
              : mlir::OpRewritePattern<BiasTypeOp>(ctx, benefit), _log(log) {
          this->setDebugName("ConvertBiasToScaleShift");
      }
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
+diff --git a/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp b/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
 index d41d76b2..7e345ba7 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
+--- a/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
++++ b/src/vpux_compiler/src/dialect/VPU/utils/nce_sparsity.cpp
 @@ -367,6 +367,8 @@ double vpux::VPU::NCESparsity::getSparsityRatio(vpux::NDTypeInterface weightsTyp
      return getSparsityRatio(weightsType, compressedSize);
  }
@@ -132,10 +132,10 @@ index d41d76b2..7e345ba7 100644
  
  bool vpux::VPU::NCESparsity::isSuperdenseRequired(const DimsOrder outOrder, const ShapeRef outShape,
                                                    const mlir::Type outElemType) {
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
+diff --git a/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp b/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
 index d0570a73..f14e0758 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
+--- a/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
++++ b/src/vpux_compiler/src/dialect/VPUIP/IR/ops/sw_kernel.cpp
 @@ -531,6 +531,8 @@ void SwKernelOp::build(mlir::OpBuilder& builder, mlir::OperationState& opState,
            /* listIndex */ nullptr, inputStrides, outputStrides, /*profilingMetadata*/ nullptr);
  }
@@ -153,10 +153,10 @@ index d0570a73..f14e0758 100644
  
  mlir::LogicalResult SwKernelOp::inferReturnTypes(mlir::MLIRContext* ctx, std::optional<mlir::Location> optLoc,
                                                   mlir::ValueRange operands, mlir::DictionaryAttr attrs,
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
+diff --git a/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp b/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
 index 922f3003..0224ab16 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
+--- a/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
++++ b/src/vpux_compiler/src/dialect/VPUIP/IR/types/iti_buffer.cpp
 @@ -261,7 +261,8 @@ mlir::Type VPUIP::ITIBufferType::parse(mlir::AsmParser& parser) {
  //
  // verify
@@ -175,10 +175,10 @@ index 922f3003..0224ab16 100644
  
  //
  // NDTypeInterface
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
+diff --git a/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp b/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
 index c4192203..d2be3700 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
+--- a/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
++++ b/src/vpux_compiler/src/dialect/VPUIP/transforms/passes/unroll_distributed_ops.cpp
 @@ -2,8 +2,12 @@
  // Copyright (C) 2022-2026 Intel Corporation.
  // SPDX-License-Identifier: Apache-2.0
@@ -211,10 +211,10 @@ index c4192203..d2be3700 100644
  
  void VPUIP::ClusterPerElementDMABaseRewriter::unrollSegmentedOrOverlapped(mlir::Location loc, VPURT::TaskOp vpurtTask,
                                                                            mlir::OpBuilder& builder,
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
+diff --git a/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp b/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
 index ec1f61bd..81a546f1 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
+--- a/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
++++ b/src/vpux_compiler/src/dialect/VPUIP/utils/sw_utils.cpp
 @@ -1731,6 +1731,8 @@ InputTiling backInferMemPermuteSwKernelInputTile(VPUIP::SwKernelOp swKernelOp, c
      return InputTiling{curTile};
  }
@@ -232,10 +232,10 @@ index ec1f61bd..81a546f1 100644
  
  InputTiling backInferMvn1NormSwKernelInputTile(VPUIP::SwKernelOp swKernelOp, const vpux::TileInfo& outputTile, Logger) {
      auto swKernelRuns = swKernelOp.getBody().getOps<VPUIP::SwKernelRun>();
-diff --git a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
+diff --git a/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp b/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
 index f8f49c56..7d8cf7e2 100644
---- a/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
-+++ b/build/compiler/src/npu_compiler/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
+--- a/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
++++ b/src/vpux_compiler/src/dialect/const/passes/apply_swizzling.cpp
 @@ -29,6 +29,8 @@ private:
      void safeRunOnFunc() final;
  };
