@@ -58,9 +58,9 @@ src_compile() {
 
 	# 2. Trigger the JIT downloads
 	# These targets create the nested directories
-	cmake_src_make npu_compiler_source
-	cmake_src_make npu_compiler_openvino_source
-	cmake_src_make openvino_source
+	cmake_build npu_compiler_source
+	cmake_build npu_compiler_openvino_source
+	cmake_build openvino_source
 
 	# 3. Apply patches from the 'files' directory
 	einfo "Patching NPU Compiler..."
