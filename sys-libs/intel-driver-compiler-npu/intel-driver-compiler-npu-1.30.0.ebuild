@@ -42,12 +42,23 @@ src_configure() {
 	append-cflags "-fcf-protection=none -Wno-error"
 	append-cxxflags "-fcf-protection=none -Wno-error"
 
-	local mycmakeargs=(
-	    -DCMAKE_BUILD_TYPE=Release
-	    -DENABLE_NPU_COMPILER_BUILD=ON
-	    -DBUILD_TESTING=$(usex test ON OFF)
-	    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-	)
+	if has_use test; then
+		einfo "NPU Compiler with test.."
+		local mycmakeargs=(
+			-DCMAKE_BUILD_TYPE=Release
+			-DENABLE_NPU_COMPILER_BUILD=ON
+			-DBUILD_TESTING=ON
+			-DCMAKE_POLICY_VERSION_MINIMUM=3.5
+		)
+	else
+		einfo "NPU Compiler without test.."
+		local mycmakeargs=(
+			-DCMAKE_BUILD_TYPE=Release
+			-DENABLE_NPU_COMPILER_BUILD=ON
+			-DBUILD_TESTING=OFF
+			-DCMAKE_POLICY_VERSION_MINIMUM=3.5
+		)
+	fi
 	cmake_src_configure
 }
 
