@@ -1,0 +1,38 @@
+git clone https://github.com/intel/linux-npu-driver.git
+cd linux-npu-driver
+
+git checkout v1.30.0
+
+git submodule update --init --recursive
+
+cmake -B build -S . \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DENABLE_NPU_COMPILER_BUILD=ON \
+	-DBUILD_TESTING=OFF \
+	-DCMAKE_C_FLAGS="-fcf-protection=none" \
+	-DCMAKE_CXX_FLAGS="-fcf-protection=none" \
+	-DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+cmake --build build --target npu_compiler_source
+cmake --build build --target npu_compiler_openvino_source
+cmake --build build --target openvino_source
+
+
+pushd build/compiler/src/npu_compiler
+patch -p1 < ../../../../intel-driver-compiler-npu-1.30.0-npu-compiler-fixes.patch
+popd
+
+pushd build/compiler/src/openvino/thirdparty/protobuf/protobuf/third_party/googletest
+patch -p1 < ../../../../../../../../../intel-driver-compiler-npu-1.30.0-npu-gtest-00.patch
+popd
+
+pushd build/compiler/src/openvino/thirdparty/gtest/gtest
+patch -p1 < ../../../../../../../intel-driver-compiler-npu-1.30.0-npu-gtest-01.patch
+popd
+
+pushd build/compiler/src/npu_compiler_openvino/thirdparty/gtest/gtest
+patch -p1 < ../../../../../../../intel-driver-compiler-npu-1.30.0-npu-gtest-01.patch
+popd
+
+cmake --build build --parallel $(nproc)
+
