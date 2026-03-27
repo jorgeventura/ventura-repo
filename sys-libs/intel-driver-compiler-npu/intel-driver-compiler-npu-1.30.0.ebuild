@@ -39,34 +39,20 @@ BDEPEND="
 
 src_configure() {
 	# Append the GCC 15 fix to system flags
-	append-cflags "-fcf-protection=none -Wno-error"
-	append-cxxflags "-fcf-protection=none -Wno-error"
+	local mycmakeargs=(
+		-DCMAKE_BUILD_TYPE=Release
+		-DENABLE_NPU_COMPILER_BUILD=ON
+		-DCMAKE_C_FLAGS="-fcf-protection=none"
+		-DCMAKE_CXX_FLAGS="-fcf-protection=none"
+		-DBUILD_TESTING=$(usex test ON OFF)
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
+	)
 
-	if has_use test; then
-		einfo "NPU Compiler with test.."
-		local mycmakeargs=(
-			-DCMAKE_BUILD_TYPE=Release
-			-DENABLE_NPU_COMPILER_BUILD=ON
-			-DBUILD_TESTING=ON
-			-DCMAKE_POLICY_VERSION_MINIMUM=3.5
-		)
-	else
-		einfo "NPU Compiler without test.."
-		local mycmakeargs=(
-			-DCMAKE_BUILD_TYPE=Release
-			-DENABLE_NPU_COMPILER_BUILD=ON
-			-DBUILD_TESTING=OFF
-			-DCMAKE_POLICY_VERSION_MINIMUM=3.5
-		)
-	fi
 	cmake_src_configure
 }
 
 
 src_compile() {
-	# 1. First, configure to create the build structure
-	cmake_src_configure
-
 	# 2. Trigger the JIT downloads
 	# These targets create the nested directories
 	cmake_build npu_compiler_source
@@ -110,42 +96,57 @@ src_compile() {
 	fi
 	popd > /dev/null
 
-	# 4. Final parallel build
 	cmake_src_compile
 }
 
+
 src_install() {
+	# 1. Standard CMake installation to the image directory ${D}
 	cmake_src_install
 
-	# This package should ship only the compiler library.
-	rm -f \
-		"${ED}"/usr/lib*/libze_loader.so* \
-		"${ED}"/usr/lib*/libze_tracing_layer.so* \
-		"${ED}"/usr/lib*/libze_validation_layer.so* \
-		"${ED}"/usr/lib*/libze_intel_npu.so* \
-		"${ED}"/usr/lib*/libze_intel_vpu.so* \
-		"${ED}"/usr/lib*/libtbbmalloc*.so* \
-		"${ED}"/usr/lib*/libtbbbind*.so*
+	# 2. Define the list of files that belong to other packages (collisions)
+	# These are usually provided by sys-libs/intel-level-zero-npu or the loader.
+	local to_remove=(
+		"/usr/lib*/libze_loader.so*"
+		"/usr/lib*/libze_tracing_layer.so*"
+		"/usr/lib*/libze_validation_layer.so*"
+		"/usr/lib*/libze_intel_npu.so*"
+		"/usr/lib*/libze_intel_vpu.so*"
+		"/usr/lib*/libtbbmalloc*.so*"
+		"/usr/lib*/libtbbbind*.so*"
+		"/usr/bin/npu-umd-test"
+		"/usr/bin/npu-kmd-test"
+	)
 
-	# Remove test/validation binaries from the image. They are useful in-tree but not
-	# required as runtime payload for the compiler package.
-	rm -f \
-		"${ED}"/usr/bin/npu-umd-test \
-		"${ED}"/usr/bin/npu-kmd-test
+	einfo "Cleaning up files to avoid collisions with the base driver..."
+	local item
+	for item in "${to_remove[@]}"; do
+		# Use rm -f to avoid errors if some targets weren't built
+		rm -rf "${ED}"${item} || die "Failed to remove colliding file: ${item}"
+	done
 
-	# Remove firmware payload if upstream installed it as part of the full install.
-	rm -rf \
-		"${ED}"/lib/firmware/intel/vpu \
-		"${ED}"/usr/lib/firmware/intel/vpu
+	# 3. Remove firmware blobs
+	# Firmware is managed by the kernel/driver package, not the compiler library.
+	if [[ -d "${ED}/lib/firmware" || -d "${ED}/usr/lib/firmware" ]]; then
+		einfo "Removing firmware payload..."
+		rm -rf "${ED}"/lib/firmware "${ED}"/usr/lib/firmware || die
+	fi
 
-	# Fail the install if the compiler library did not make it into the image.
+	# 4. Critical Library Verification
+	# If the compiler .so is missing, the build effectively failed.
+	# We use nullglob to handle cases where the lib is in /usr/lib or /usr/lib64
 	shopt -s nullglob
 	local compiler_libs=( "${ED}"/usr/lib*/libnpu_driver_compiler.so* )
 	shopt -u nullglob
-	[[ ${#compiler_libs[@]} -gt 0 ]] || die "libnpu_driver_compiler.so was not installed"
 
+	if [[ ${#compiler_libs[@]} -eq 0 ]]; then
+		die "Failure: libnpu_driver_compiler.so was not found in the install image!"
+	fi
+
+	# 5. Documentation
 	dodoc README.md docs/overview.md
 }
+
 
 src_test() {
 	cmake_src_test
