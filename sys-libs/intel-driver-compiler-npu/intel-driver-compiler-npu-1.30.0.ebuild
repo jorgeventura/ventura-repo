@@ -1,6 +1,6 @@
 EAPI=8
 
-inherit cmake git-r3
+inherit cmake git-r3 flag-o-matic
 
 DESCRIPTION="Intel NPU compiler userspace library (libnpu_driver_compiler)"
 HOMEPAGE="https://github.com/intel/linux-npu-driver"
@@ -39,8 +39,8 @@ BDEPEND="
 
 src_configure() {
 	# Append the GCC 15 fix to system flags
-	append-cflags "-fcf-protection=none"
-	append-cxxflags "-fcf-protection=none"
+	append-cflags "-fcf-protection=none -Wno-error"
+	append-cxxflags "-fcf-protection=none -Wno-error"
 
 	local mycmakeargs=(
 	    -DCMAKE_BUILD_TYPE=Release
@@ -73,19 +73,31 @@ src_compile() {
 	einfo "Patching nested GTest dependencies..."
 	# Path 00: Protobuf GTest
 	pushd "${BUILD_DIR}/compiler/src/openvino/thirdparty/protobuf/protobuf/third_party/googletest" > /dev/null || die
-	eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-00.patch"
+	if ! patch -p1 -R --dry-run < "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-00.patch" > /dev/null 2>&1; then
+	    eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-00.patch"
+	fi
 	popd > /dev/null
 
-	# Path 01: Direct OpenVino and Compiler GTest
+	# Path 01,02: Direct OpenVino and Compiler GTest
 	local gtest_dirs=(
 	    "compiler/src/openvino/thirdparty/gtest/gtest"
 	    "compiler/src/npu_compiler_openvino/thirdparty/gtest/gtest"
 	)
 	for d in "${gtest_dirs[@]}"; do
 	    pushd "${BUILD_DIR}/${d}" > /dev/null || die
-	    eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-01.patch"
+	    if ! patch -p1 -R --dry-run < "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-01.patch" > /dev/null 2>&1; then
+	        eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-gtest-01.patch"
+		fi
 	    popd > /dev/null
 	done
+
+	einfo "Patching nested vpucostmodel dependencies..."
+	# Patch 03: vpucostmodel
+	pushd "${BUILD_DIR}/compiler/src/npu_compiler/thirdparty/vpucostmodel" > /dev/null || die
+	if ! patch -p1 -R --dry-run < "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-vpucostmodel.patch" > /dev/null 2>&1; then
+	    eapply "${FILESDIR}/intel-driver-compiler-npu-1.30.0-npu-vpucostmodel.patch"
+	fi
+	popd > /dev/null
 
 	# 4. Final parallel build
 	cmake_src_compile
