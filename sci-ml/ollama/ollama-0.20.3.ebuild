@@ -203,13 +203,56 @@ src_prepare() {
 	fi
 }
 
+
 src_configure() {
+	# The order matters: check for the newest versions first
+	if has_version ">=dev-util/nvidia-cuda-toolkit-13.0"; then
+	    # Architectures for CUDA 13 (Extrapolated from project patterns)
+	    CUDAARCHS="50;52;60;61;70;75;80;86;89;90;90a;100;120"
+	elif has_version ">=dev-util/nvidia-cuda-toolkit-12.0"; then
+	    # Official list for CUDA 12 from CMakePresets.json
+	    CUDAARCHS="50;52;60;61;70;75;80;86;89;90;90a"
+	elif has_version ">=dev-util/nvidia-cuda-toolkit-11.0"; then
+	    # Official list for CUDA 11 from CMakePresets.json
+	    cuda_arch="50-virtual;60-virtual;61-virtual;70-virtual;75-virtual;80-virtual;86-virtual;87-virtual;89-virtual;90-virtual"
+	else
+	    # Fallback if no matching version is found
+	    CUDAARCHS="native"
+	fi
+
+	# --- DEBUG MESSAGES ---
+	einfo "Ollama Build Debug:"
+	einfo "  Detected CUDA Toolkit version: $(best_version dev-util/nvidia-cuda-toolkit)"
+	einfo "  Targeting CUDA_ARCHITECTURES: ${CUDAARCHS}"
+	# This will stop the build right here so you can read the info above.
+	# To continue later, you'll remove this line.
+	#die "PAUSED: Check the variables above. If they look correct, check CMakeCache.txt after this fails."
+	# ----------------------
+
 	local mycmakeargs=(
 		-DOLLAMA_INSTALL_RUNTIME_DEPS="no"
 		-DGGML_CCACHE="no"
+
+		# backends end up in /usr/bin otherwise
 		-DGGML_BACKEND_DL="yes"
+		# TODO causes duplicate install warning but breaks detection otherwise ollama/issues/13614
 		-DGGML_BACKEND_DIR="${EPREFIX}/usr/$(get_libdir)/${PN}"
+
+		# -DGGML_CPU="yes"
 		-DGGML_BLAS="$(usex blas)"
+
+		# -DGGML_CUDA="$(usex cuda)"
+		# -DGGML_HIP="$(usex rocm)"
+
+		# -DGGML_METAL="yes" # apple
+		# missing from ml/backend/ggml/ggml/src/
+		# -DGGML_CANN="yes"
+		# -DGGML_MUSA="yes"
+		# -DGGML_RPC="yes"
+		# -DGGML_SYCL="yes"
+		# -DGGML_KOMPUTE="$(usex kompute)"
+		# -DGGML_OPENCL="$(usex opencl)"
+		# -DGGML_VULKAN="$(usex vulkan)"
 		"$(cmake_use_find_package vulkan Vulkan)"
 	)
 
@@ -278,7 +321,9 @@ src_configure() {
 		)
 	fi
 
+	# Combine with your sandbox thought for a "clean" run
 	cmake_src_configure
+	# die "PAUSED: Scroll up to find 'CHECK_ARCH' and see what CMake actually received."
 }
 
 src_compile() {
@@ -332,13 +377,4 @@ pkg_postinst() {
 		einfo "The ebuild ensures this for user ${PN} via acct-user/${PN}[cuda]"
 	fi
 }
-
-
-
-
-
-
-
-
-
 
