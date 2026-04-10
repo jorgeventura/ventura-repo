@@ -208,13 +208,13 @@ src_configure() {
 	# The order matters: check for the newest versions first
 	if has_version ">=dev-util/nvidia-cuda-toolkit-13.0"; then
 	    # Architectures for CUDA 13 (Extrapolated from project patterns)
-	    CUDAARCHS="50;52;60;61;70;75;80;86;89;90;90a;100;120"
+	    CUDAARCHS="80;86;89;90;90a;100;120"
 	elif has_version ">=dev-util/nvidia-cuda-toolkit-12.0"; then
 	    # Official list for CUDA 12 from CMakePresets.json
-	    CUDAARCHS="50;52;60;61;70;75;80;86;89;90;90a"
+	    CUDAARCHS="80;86;89;90;90a"
 	elif has_version ">=dev-util/nvidia-cuda-toolkit-11.0"; then
 	    # Official list for CUDA 11 from CMakePresets.json
-	    cuda_arch="50-virtual;60-virtual;61-virtual;70-virtual;75-virtual;80-virtual;86-virtual;87-virtual;89-virtual;90-virtual"
+	    cuda_arch="80-virtual;86-virtual;87-virtual;89-virtual;90-virtual"
 	else
 	    # Fallback if no matching version is found
 	    CUDAARCHS="native"
@@ -226,7 +226,7 @@ src_configure() {
 	einfo "  Targeting CUDA_ARCHITECTURES: ${CUDAARCHS}"
 	# This will stop the build right here so you can read the info above.
 	# To continue later, you'll remove this line.
-	#die "PAUSED: Check the variables above. If they look correct, check CMakeCache.txt after this fails."
+	# die "PAUSED: Check the variables above. If they look correct, check CMakeCache.txt after this fails."
 	# ----------------------
 
 	local mycmakeargs=(
