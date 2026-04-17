@@ -33,7 +33,7 @@ LICENSE="MIT"
 SLOT="0"
 
 IUSE="cuda rocm vulkan"
-# IUSE+=" opencl"
+# IUSE+=" opencl sycl"
 
 BLAS_BACKENDS="blis mkl openblas"
 BLAS_REQUIRED_USE="blas? ( ?? ( ${BLAS_BACKENDS} ) )"
@@ -86,6 +86,10 @@ COMMON_DEPEND="
 		>=dev-util/hip-${ROCM_VERSION}:=
 		>=sci-libs/hipBLAS-${ROCM_VERSION}:=
 		>=sci-libs/rocBLAS-${ROCM_VERSION}:=
+	)
+	sycl? (
+		dev-libs/intel-compute-runtime
+		dev-util/intel-graphics-compiler
 	)
 "
 
@@ -242,19 +246,18 @@ src_configure() {
 
 		# -DGGML_CPU="yes"
 		-DGGML_BLAS="$(usex blas)"
-
-		# -DGGML_CUDA="$(usex cuda)"
-		# -DGGML_HIP="$(usex rocm)"
+		-DGGML_CUDA="$(usex cuda)"
+		-DGGML_HIP="$(usex rocm)"
+		-DGGML_SYCL="$(usex sycl)"
+		-DGGML_VULKAN="$(usex vulkan)"
 
 		# -DGGML_METAL="yes" # apple
 		# missing from ml/backend/ggml/ggml/src/
 		# -DGGML_CANN="yes"
 		# -DGGML_MUSA="yes"
 		# -DGGML_RPC="yes"
-		# -DGGML_SYCL="yes"
 		# -DGGML_KOMPUTE="$(usex kompute)"
 		# -DGGML_OPENCL="$(usex opencl)"
-		# -DGGML_VULKAN="$(usex vulkan)"
 		"$(cmake_use_find_package vulkan Vulkan)"
 	)
 
