@@ -32,7 +32,7 @@ fi
 LICENSE="MIT"
 SLOT="0"
 
-IUSE="cuda rocm vulkan"
+IUSE="cuda rocm vulkan sycl"
 # IUSE+=" opencl sycl"
 
 BLAS_BACKENDS="blis mkl openblas"
@@ -245,11 +245,11 @@ src_configure() {
 		-DGGML_BACKEND_DIR="${EPREFIX}/usr/$(get_libdir)/${PN}"
 
 		# -DGGML_CPU="yes"
-		-DGGML_BLAS="$(usex blas)"
-		-DGGML_CUDA="$(usex cuda)"
-		-DGGML_HIP="$(usex rocm)"
-		-DGGML_SYCL="$(usex sycl)"
-		-DGGML_VULKAN="$(usex vulkan)"
+		# -DGGML_BLAS="$(usex blas)"
+		# -DGGML_CUDA="$(usex cuda)"
+		# -DGGML_HIP="$(usex rocm)"
+		# -DGGML_SYCL="$(usex sycl)"
+		# -DGGML_VULKAN="$(usex vulkan)"
 
 		# -DGGML_METAL="yes" # apple
 		# missing from ml/backend/ggml/ggml/src/
