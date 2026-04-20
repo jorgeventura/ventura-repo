@@ -1,15 +1,12 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
 # latest gentoo apache files
-GENTOO_PATCHSTAMP="20231019"
+GENTOO_PATCHSTAMP="20251205"
 GENTOO_DEVELOPER="graaff"
-GENTOO_PATCHNAME="gentoo-apache-2.4.58"
-
-# ancient hack: bug #502384
-IUSE="split-usr"
+GENTOO_PATCHNAME="gentoo-apache-2.4.66"
 
 # IUSE/USE_EXPAND magic
 IUSE_MPMS_FORK="prefork"
@@ -41,9 +38,9 @@ dbd deflate dir dumpio env expires ext_filter file_cache filter headers http2
 ident imagemap include info lbmethod_byrequests lbmethod_bytraffic lbmethod_bybusyness
 lbmethod_heartbeat log_config log_forensic logio lua macro md mime mime_magic negotiation
 proxy proxy_ajp proxy_balancer proxy_connect proxy_ftp proxy_hcheck proxy_html proxy_http proxy_scgi
-proxy_http2 proxy_fcgi proxy_uwsgi proxy_wstunnel rewrite ratelimit remoteip reqtimeout
+proxy_http2 proxy_fcgi proxy_uwsgi proxy_wstunnel request rewrite ratelimit remoteip reqtimeout
 session session_cookie session_crypto session_dbd setenvif slotmem_shm socache_memcache
-socache_shmcb speling status substitute systemd tls unique_id userdir usertrack
+socache_shmcb speling status substitute systemd unique_id userdir usertrack
 unixd version vhost_alias watchdog xml2enc"
 # The following are also in the source as of this version, but are not available
 # for user selection:
@@ -53,6 +50,7 @@ unixd version vhost_alias watchdog xml2enc"
 # inter-module dependencies
 # TODO: this may still be incomplete
 MODULE_DEPENDS="
+	auth_form:request
 	auth_form:session
 	brotli:filter
 	dav_fs:dav
@@ -121,7 +119,7 @@ MODULE_DEFINES="
 	proxy_http:PROXY
 	proxy_http2:PROXY
 	proxy_scgi:PROXY
-	proxy_uswgi:PROXY
+	proxy_uwsgi:PROXY
 	proxy_wstunnel:PROXY
 	socache_shmcb:SSL
 	socache_memcache:CACHE
@@ -141,29 +139,31 @@ MODULE_CRITICAL="
 	mime
 	unixd
 "
-inherit apache-3 systemd tmpfiles toolchain-funcs
+inherit apache-4 systemd tmpfiles toolchain-funcs
 
 DESCRIPTION="The Apache Web Server"
 HOMEPAGE="https://httpd.apache.org/"
 
 # some helper scripts are Apache-1.1, thus both are here
 LICENSE="Apache-2.0 Apache-1.1"
-SLOT="0"
+SLOT="2"
 KEYWORDS="amd64 x86"
+
+DEPEND="${RDEPEND}"
 
 pkg_setup() {
 	# dependent critical modules which are not allowed in global scope due
 	# to USE flag conditionals (bug #499260)
 	use ssl && MODULE_CRITICAL+=" socache_shmcb"
 	use doc && MODULE_CRITICAL+=" alias negotiation setenvif"
-	apache-3_pkg_setup
+	apache-4_pkg_setup
 }
 
 src_configure() {
 	# Brain dead check.
 	tc-is-cross-compiler && export ap_cv_void_ptr_lt_long="no"
 
-	apache-3_src_configure
+	apache-4_src_configure
 }
 
 src_compile() {
@@ -181,7 +181,7 @@ src_compile() {
 }
 
 src_install() {
-	apache-3_src_install
+	apache-4_src_install
 	local i
 	local apache_tools_prune_list=(
 		/usr/bin/{htdigest,logresolve,htpasswd,htdbm,ab,httxt2dbm}
@@ -193,11 +193,10 @@ src_install() {
 		rm "${ED}"/${i} || die "Failed to prune apache-tools bits"
 	done
 
-	# install apxs in /usr/bin (bug #502384) and put a symlink into the
-	# old location until all ebuilds and eclasses have been modified to
-	# use the new location.
+	# Clean up empty directories created by the apache install system
+	rmdir "${ED}"/var/{run,www} || die
+
 	dobin support/apxs
-	use split-usr && dosym ../bin/apxs /usr/sbin/apxs
 
 	# Note: wait for mod_systemd to be included in some forthcoming release,
 	# Then apache2.4.service can be used and systemd support controlled
@@ -216,7 +215,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	apache-3_pkg_postinst || die "apache-3_pkg_postinst failed"
+	apache-4_pkg_postinst || die "apache-4_pkg_postinst failed"
 
 	tmpfiles_process apache.conf #662544
 
@@ -256,4 +255,8 @@ pkg_postinst() {
 			echo
 		fi
 	fi
+
+	# removed in 2.4.63
+	ewarn "Attention: The tls module based on rustls-ffi has been moved to its own package."
+	ewarn "emerge www-apache/mod_tls to continue using the tls module."
 }
