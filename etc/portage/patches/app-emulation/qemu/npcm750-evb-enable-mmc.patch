@@ -1,6 +1,8 @@
+diff --git a/hw/arm/npcm7xx_boards.c b/hw/arm/npcm7xx_boards.c
+index c1e100b..e110568 100644
 --- a/hw/arm/npcm7xx_boards.c
 +++ b/hw/arm/npcm7xx_boards.c
-@@ -374,6 +374,7 @@
+@@ -374,6 +374,7 @@ static void npcm750_evb_init(MachineState *machine)
      npcm7xx_connect_flash(&soc->fiu[0], 0, "w25q256", drive_get(IF_MTD, 0, 0));
      npcm750_evb_i2c_init(soc);
      npcm750_evb_fan_init(NPCM7XX_MACHINE(machine), soc);
@@ -8,17 +10,21 @@
      npcm7xx_load_kernel(machine, soc);
  }
  
+diff --git a/hw/misc/npcm_clk.c b/hw/misc/npcm_clk.c
+index e202a8a..255c44f 100644
 --- a/hw/misc/npcm_clk.c
 +++ b/hw/misc/npcm_clk.c
-@@ -621,7 +621,7 @@
+@@ -621,7 +621,7 @@ static const DividerInitInfo divider_init_info_list[] = {
          .name = "timer-divider",
          .src_type = CLKSRC_SEL,
          .src_index = NPCM7XX_CLOCK_TIMCKSEL,
 -        .divide = divide_by_reg_divisor,
-+        .divide = shift_by_reg_divisor,
++	.divide = shift_by_reg_divisor,
          .reg = NPCM7XX_CLK_CLKDIV1,
          .offset = 21,
          .len = 5,
+diff --git a/hw/timer/npcm7xx_timer.c b/hw/timer/npcm7xx_timer.c
+index 6a116ad..f97d1db 100644
 --- a/hw/timer/npcm7xx_timer.c
 +++ b/hw/timer/npcm7xx_timer.c
 @@ -29,6 +29,12 @@
@@ -34,7 +40,7 @@
  /* 32-bit register indices. */
  enum NPCM7xxTimerRegisters {
      NPCM7XX_TIMER_TCSR0,
-@@ -428,11 +434,28 @@
+@@ -428,11 +434,28 @@ static uint64_t npcm7xx_timer_read(void *opaque, hwaddr offset, unsigned size)
      NPCM7xxTimerCtrlState *s = opaque;
      uint64_t value = 0;
      hwaddr reg;
@@ -64,7 +70,7 @@
      case NPCM7XX_TIMER_TCSR2:
      case NPCM7XX_TIMER_TCSR3:
      case NPCM7XX_TIMER_TCSR4:
-@@ -611,6 +634,8 @@
+@@ -611,6 +634,8 @@ static void npcm7xx_timer_init(Object *obj)
      int i;
      NPCM7xxWatchdogTimer *w;
  
@@ -73,9 +79,11 @@
      for (i = 0; i < NPCM7XX_TIMERS_PER_CTRL; i++) {
          NPCM7xxTimer *t = &s->timer[i];
          t->ctrl = s;
+diff --git a/include/hw/timer/npcm7xx_timer.h b/include/hw/timer/npcm7xx_timer.h
+index e287375..5643def 100644
 --- a/include/hw/timer/npcm7xx_timer.h
 +++ b/include/hw/timer/npcm7xx_timer.h
-@@ -104,6 +104,8 @@
+@@ -104,6 +104,8 @@ struct NPCM7xxTimerCtrlState {
      Clock       *clock;
      NPCM7xxTimer timer[NPCM7XX_TIMERS_PER_CTRL];
      NPCM7xxWatchdogTimer watchdog_timer;
